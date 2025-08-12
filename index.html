@@ -1,257 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>File Drop — Demo</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading...</title>
   <style>
-    :root{
-      --bg:#0f1724;
-      --card:#0b1220;
-      --accent:#2dd4bf;
-      --muted:#9aa4b2;
-      --box:#112233;
-    }
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: linear-gradient(180deg,var(--bg) 0%, #071028 100%);
-      color:#e6eef6;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:32px;
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #fff;
+      font-family: Arial, sans-serif;
+      color: #333;
     }
 
-    .card{
-      width:min(920px, 96%);
-      background:linear-gradient(180deg,var(--card), #061223);
-      border-radius:16px;
-      padding:28px;
-      box-shadow:0 10px 30px rgba(2,6,23,.6);
-      text-align:center;
+    .box {
+      width: 80px;
+      height: 50px;
+      border: 3px solid #3498db;
+      position: relative;
+      margin-top: 40px;
     }
 
-    h1{margin:0 0 8px; font-weight:600; letter-spacing:0.6px}
-    p{margin:0 0 20px; color:var(--muted)}
-
-    /* Stage */
-    .stage{
-      height:320px;
-      position:relative;
-      overflow:hidden;
-      border-radius:12px;
-      background:
-        radial-gradient(circle at 20% 10%, rgba(45,212,191,.06), transparent 10%),
-        linear-gradient(180deg, rgba(255,255,255,.02), transparent 40%);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
+    .file {
+      width: 40px;
+      height: 50px;
+      background: #3498db;
+      position: absolute;
+      top: -70px;
+      left: 20px;
+      animation: drop 1s ease-in-out infinite;
     }
 
-    /* Ground */
-    .ground{
-      position:absolute;
-      left:0; right:0; bottom:32px;
-      height:48px;
-      background:linear-gradient(180deg,var(--box), #0b253a);
-      border-radius:8px;
-      box-shadow:0 6px 18px rgba(2,6,23,.6);
-      display:flex;
-      align-items:center;
-      justify-content:center;
+    @keyframes drop {
+      0%   { top: -70px; opacity: 1; }
+      70%  { top: 0px; opacity: 1; }
+      100% { top: 0px; opacity: 0; }
     }
 
-    /* Box (the drop target) */
-    .drop-box{
-      width:160px;
-      height:90px;
-      background:linear-gradient(180deg,#071428,#0b2a3f);
-      border:2px solid rgba(255,255,255,0.04);
-      border-radius:8px;
-      position:relative;
-      display:flex;
-      align-items:flex-end;
-      justify-content:center;
-      overflow:visible;
-    }
-    .drop-box::before{
-      content:"";
-      position:absolute;
-      top:-10px; left:6px; right:6px;
-      height:10px;
-      background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.06));
-      border-radius:4px;
-      transform:skewX(-10deg);
-    }
-
-    /* Rat group container - where the animated rats run (repeatable) */
-    .track{
-      position:relative;
-      width:100%;
-      height:100%;
-      pointer-events:none;
-    }
-
-    /* File element */
-    .file{
-      width:64px;
-      height:44px;
-      background:linear-gradient(180deg,#fff,#e6f7f6);
-      border-radius:6px;
-      border:2px solid rgba(0,0,0,0.06);
-      box-shadow:0 6px 12px rgba(2,6,23,.5);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:12px;
-      color:#08303a;
-      font-weight:700;
-      transform-origin:center;
-    }
-
-    /* RAT (simple cute doodle) */
-    .rat {
-      width:110px;
-      height:56px;
-      display:inline-block;
-    }
-
-    /* Positioning helpers for animation */
-    .actor {
-      position:absolute;
-      bottom:86px; /* above ground + box */
-      left:-160px;
-      display:flex;
-      gap:8px;
-      align-items:center;
-      transform-origin:left center;
-    }
-
-    /* Keyframes: run across, drop file, return */
-    @keyframes run-across {
-      0%   { transform: translateX(-200px) scaleX(1) translateY(0); opacity:0 }
-      6%   { opacity:1 }
-      40%  { transform: translateX(calc(50vw - 100px)) scaleX(1) translateY(-6px); } /* approach box */
-      48%  { transform: translateX(calc(50vw - 120px)) scaleX(1) translateY(-2px); } /* adjust */
-      50%  { transform: translateX(calc(50vw - 120px)) scaleX(1) translateY(0); } /* drop point */
-      58%  { transform: translateX(calc(50vw - 30px)) scaleX(-1) translateY(0); opacity:1 } /* return mirrored */
-      100% { transform: translateX(120vw) scaleX(-1) translateY(0); opacity:0 }
-    }
-
-    @keyframes file-drop {
-      0%   { transform: translateY(-6px) rotate(-6deg); opacity:1 }
-      48%  { transform: translateY(-26px) rotate(-6deg); opacity:1 }
-      50%  { transform: translateY(0px) rotate(0deg); opacity:1 }
-      52%  { transform: translateY(6px) rotate(4deg); opacity:0.95 }
-      100% { opacity:0; transform:translateY(20px) scale(.95) }
-    }
-
-    /* apply animations */
-    .actor {
-      animation: run-across 5.8s linear infinite;
-    }
-    .actor .file {
-      animation: file-drop 5.8s linear infinite;
-      animation-delay: 0s;
-    }
-
-    /* second actor (staggered) */
-    .actor.second {
-      bottom:110px;
-      animation-delay: 2s;
-      transform-origin:left center;
-    }
-    .actor.second .file {
-      animation-delay: 2s;
-    }
-
-    /* small responsive tweaks */
-    @media (max-width:600px){
-      .rat{width:86px;height:46px}
-      .file{width:52px;height:36px;font-size:11px}
-      .drop-box{width:140px;height:80px}
-      .ground{bottom:24px;height:44px}
-      .actor{bottom:74px}
+    .loading-text {
+      margin-top: 20px;
+      font-size: 18px;
+      letter-spacing: 1px;
     }
   </style>
+  <script>
+    setTimeout(() => {
+      window.location.href = "step2.html"; 
+    }, 2000);
+  </script>
 </head>
 <body>
-  <div class="card" role="main" aria-labelledby="title">
-    <h1 id="title">RAT download — Demo</h1>
-    <p>Animated demo: just rats doing their thing (looping, harmless).</p>
-
-    <div class="stage" aria-hidden="false">
-      <div class="track" aria-hidden="true">
-        <!-- actor 1 -->
-        <div class="actor" aria-hidden="true" role="presentation">
-          <!-- file carried by rat -->
-          <div class="file" aria-hidden="true">DOC</div>
-          <!-- simple doodle rat (SVG) -->
-          <svg class="rat" viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <!-- body -->
-            <ellipse cx="120" cy="60" rx="48" ry="28" fill="#c7dce0"/>
-            <!-- head -->
-            <circle cx="70" cy="54" r="22" fill="#c7dce0"/>
-            <!-- ear -->
-            <circle cx="58" cy="38" r="8" fill="#a9c9cc"/>
-            <!-- eye -->
-            <circle cx="76" cy="52" r="3" fill="#032329"/>
-            <!-- tail -->
-            <path d="M160 72 C190 78,200 60,210 54" stroke="#8fb9bc" stroke-width="6" fill="none" stroke-linecap="round"/>
-            <!-- legs -->
-            <ellipse cx="96" cy="86" rx="6" ry="3" fill="#9db9bc"/>
-            <ellipse cx="132" cy="86" rx="6" ry="3" fill="#9db9bc"/>
-            <!-- shadow under rat -->
-            <ellipse cx="110" cy="96" rx="38" ry="8" fill="rgba(0,0,0,0.25)"/>
-          </svg>
-        </div>
-
-        <!-- actor 2 (staggered) -->
-        <div class="actor second" aria-hidden="true" role="presentation">
-          <div class="file" aria-hidden="true">ZIP</div>
-          <svg class="rat" viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <ellipse cx="120" cy="60" rx="48" ry="28" fill="#f2e6d9"/>
-            <circle cx="70" cy="54" r="22" fill="#f2e6d9"/>
-            <circle cx="58" cy="38" r="8" fill="#e0cdbd"/>
-            <circle cx="76" cy="52" r="3" fill="#2b2b2b"/>
-            <path d="M160 72 C190 78,200 60,210 54" stroke="#d7c0b0" stroke-width="6" fill="none" stroke-linecap="round"/>
-            <ellipse cx="96" cy="86" rx="6" ry="3" fill="#d7c0b0"/>
-            <ellipse cx="132" cy="86" rx="6" ry="3" fill="#d7c0b0"/>
-            <ellipse cx="110" cy="96" rx="38" ry="8" fill="rgba(0,0,0,0.18)"/>
-          </svg>
-        </div>
-      </div>
-
-      <!-- ground & drop box -->
-      <div class="ground" role="presentation">
-        <div class="drop-box" role="img" aria-label="Secure drop box">
-          <!-- subtle box interior -->
-          <svg width="120" height="60" viewBox="0 0 120 60" aria-hidden="true" focusable="false">
-            <rect x="6" y="10" width="108" height="36" rx="6" fill="rgba(255,255,255,0.02)"/>
-            <path d="M6 10 L22 4 L98 4 L114 10" stroke="rgba(255,255,255,0.03)" fill="none"/>
-          </svg>
-        </div>
-      </div>
-    </div>
-
-    <p style="margin-top:18px;color:var(--muted);font-size:13px">This is the final landing page where your original link will be downloaded.</p>
+  <div class="box">
+    <div class="file"></div>
   </div>
-
-  <script>
-    // tiny helper: restart animations on visibility change (keeps smooth loops after tab switch)
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) {
-        document.querySelectorAll('.actor').forEach((el) => {
-          el.style.animation = 'none';
-          // forcing reflow to restart
-          void el.offsetWidth;
-          el.style.animation = '';
-        });
-      }
-    });
-  </script>
+  <div class="loading-text">Loading...</div>
 </body>
 </html>
